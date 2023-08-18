@@ -7,6 +7,7 @@
 #define FPS 60
 
 void ResetRects(SDL_Rect* ball, SDL_Rect* rightPad, SDL_Rect* leftPad) {
+	// defaultPosition rects are obligatory because immediate definition doesn't work
 	SDL_Rect rightPadDefaultPosition = { 610, 300, 20, 120 };
 	SDL_Rect leftPadDefaultPosition = { 10, 60, 20, 120 };
 	SDL_Rect ballDefaultPosition = { 310, 230, 20, 20 };
@@ -17,7 +18,9 @@ void ResetRects(SDL_Rect* ball, SDL_Rect* rightPad, SDL_Rect* leftPad) {
 }
 
 bool CheckCollision(SDL_Rect* obj1, SDL_Rect* obj2) {
-	if (((obj1->x > obj2->x) && (obj1->x < (obj2->x + obj2->w))) && ((obj1->y > obj2->y) && (obj1->y < (obj2->y + obj2->h)))) return true;
+	// collision in person
+	if (((obj1->x > obj2->x) && (obj1->x < (obj2->x + obj2->w)))
+		&& ((obj1->y > obj2->y) && (obj1->y < (obj2->y + obj2->h)))) return true;
 	else return false;
 }
 
@@ -33,7 +36,9 @@ void MovePadDown(SDL_Rect* pad, int* padSpeed, int* numkeys) {
 	}
 }
 
-void MoveBall(SDL_Rect* ball, int* ballSpeedX, int* ballSpeedY, SDL_Rect *rightPad, SDL_Rect* leftPad) {
+void MoveBall(SDL_Rect* ball, int* ballSpeedX, int* ballSpeedY, SDL_Rect* rightPad, SDL_Rect* leftPad) {
+
+	// collision checking
 	if (CheckCollision(ball, rightPad)) {
 		*ballSpeedX = -(*ballSpeedX);
 	}
@@ -42,9 +47,11 @@ void MoveBall(SDL_Rect* ball, int* ballSpeedX, int* ballSpeedY, SDL_Rect *rightP
 		*ballSpeedX = -(*ballSpeedX);
 	}
 
+	// moves the ball around
 	ball->x += *ballSpeedX;
 	ball->y += *ballSpeedY;
 
+	// checks for boundaries
 	if ((ball->y >= SCREEN_HEIGHT) || (ball->y < 0)) {
 		*ballSpeedY = -(*ballSpeedY);
 	}
@@ -61,6 +68,7 @@ void MoveBall(SDL_Rect* ball, int* ballSpeedX, int* ballSpeedY, SDL_Rect *rightP
 
 
 int main(int argc, char* args[]) {
+	// initialization
 	SDL_Window* window = SDL_CreateWindow("pong", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == NULL) {
 		printf("Error occured while creating window, error %s\n", SDL_GetError());
@@ -73,22 +81,17 @@ int main(int argc, char* args[]) {
 	}
 	SDL_Event event;
 	bool isGame = true;
-
 	SDL_Rect ball;
 	SDL_Rect rightPad;
 	SDL_Rect leftPad;
-
-
-	ResetRects(&ball, &rightPad, &leftPad);
-
 	int padSpeed = 5;
 	int ballSpeedX = 7;
 	int ballSpeedY = 7;
-	const Uint8 *numkeys;
+	const Uint8* numkeys;
 	numkeys = SDL_GetKeyboardState(NULL);
+	double delayTime = (1. / (double)FPS) * 1000.;
 
-
-	double delayTime = (1. / (double) FPS) * 1000.;
+	ResetRects(&ball, &rightPad, &leftPad);
 
 	while (isGame) {
 		// updates keys
@@ -97,7 +100,7 @@ int main(int argc, char* args[]) {
 			// quits
 			if (event.key.keysym.sym == SDLK_ESCAPE) isGame = false;
 		}
-		
+
 		// checks for key updates
 		if (numkeys[SDL_SCANCODE_W]) {
 			MovePadUp(&leftPad, &padSpeed, &numkeys);
@@ -114,9 +117,10 @@ int main(int argc, char* args[]) {
 		if (numkeys[SDL_SCANCODE_DOWN]) {
 			MovePadDown(&rightPad, &padSpeed, &numkeys);
 		}
-		
+
 		MoveBall(&ball, &ballSpeedX, &ballSpeedY, &rightPad, &leftPad);
-		
+
+		// renders the pads and the ball
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 		SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
